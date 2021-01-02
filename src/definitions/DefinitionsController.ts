@@ -1,4 +1,4 @@
-import {Controller, Get, Param, ParseBoolPipe, Query} from "@nestjs/common";
+import {Controller, DefaultValuePipe, Get, Param, ParseBoolPipe, Query} from "@nestjs/common";
 import { DefinitionService } from "./DefinitionService";
 import {DefinitionRecord} from "./model/DefinitionRecord";
 import {StringUtils} from "turbocommons-ts";
@@ -8,12 +8,12 @@ export class DefinitionsController{
     constructor(private readonly definitionService: DefinitionService) {}
 
     @Get('find')
-    findOne(@Query('id') id: string, @Query('similar', ParseBoolPipe) similar: boolean): string {
+    findOne(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean): string {
         const definitionRecords = this.definitionService.getDefinitionsById(id, similar);
         return JSON.stringify(definitionRecords);
     }
     @Get('getLaws')
-    getLaws(@Query('id') id: string, @Query('similar', ParseBoolPipe) similar: boolean): string {
+    getLaws(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean): string {
         const definitionRecords = this.definitionService.getDefinitionsById(id, similar);
         const laws = definitionRecords.map(def => def.Law);
         const uniqueLaws = [];
@@ -31,7 +31,7 @@ export class DefinitionsController{
     }
 
     @Get('getDesc')
-    getDescriptions(@Query('id') id: string, @Query('similar', ParseBoolPipe) similar: boolean): string {
+    getDescriptions(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean): string {
         const definitionRecords = this.definitionService.getDefinitionsById(id, similar);
         const descriptions = definitionRecords.map(def => def.Description);
         const uniqueDescriptions = [];
@@ -50,7 +50,7 @@ export class DefinitionsController{
     }
 
     @Get('getDefs')
-    getSimilarDefs(@Query('id') id: string, @Query('similar', ParseBoolPipe) similar: boolean): string {
+    getSimilarDefs(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean): string {
         const definitionRecords = this.definitionService.getDefinitionsById(id, similar);
         const definitions = definitionRecords.map(def => def.Definition);
         const similarDefinitions = [];
