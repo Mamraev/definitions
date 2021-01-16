@@ -1,20 +1,18 @@
-import {Controller, DefaultValuePipe, Get, Param, ParseBoolPipe, Query} from "@nestjs/common";
+import {Controller, DefaultValuePipe, Get, ParseBoolPipe, ParseIntPipe, Query} from "@nestjs/common";
 import { DefinitionService } from "./DefinitionService";
-import {DefinitionRecord} from "./model/DefinitionRecord";
-import {StringUtils} from "turbocommons-ts";
 
 @Controller("def")
 export class DefinitionsController{
     constructor(private readonly definitionService: DefinitionService) {}
 
     @Get('find')
-    findOne(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean): string {
-        const definitionRecords = this.definitionService.getDefinitionsById(id, similar);
+    findOne(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean, @Query('similarityVar', new DefaultValuePipe(80), ParseIntPipe) similarityVar: number): string {
+        const definitionRecords = this.definitionService.getDefinitionsById(id, similar, similarityVar);
         return JSON.stringify(definitionRecords);
     }
     @Get('getLaws')
-    getLaws(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean): string {
-        const definitionRecords = this.definitionService.getDefinitionsById(id, similar);
+    getLaws(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean, @Query('similarityVar', new DefaultValuePipe(80), ParseIntPipe) similarityVar: number): string {
+        const definitionRecords = this.definitionService.getDefinitionsById(id, similar, similarityVar);
         const laws = definitionRecords.map(def => def.Law);
         const uniqueLaws = [];
         laws.forEach(law => {
@@ -31,8 +29,8 @@ export class DefinitionsController{
     }
 
     @Get('getDesc')
-    getDescriptions(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean): string {
-        const definitionRecords = this.definitionService.getDefinitionsById(id, similar);
+    getDescriptions(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean, @Query('similarityVar', new DefaultValuePipe(80), ParseIntPipe) similarityVar: number): string {
+        const definitionRecords = this.definitionService.getDefinitionsById(id, similar, similarityVar);
         const descriptions = definitionRecords.map(def => def.Description);
         const uniqueDescriptions = [];
         descriptions.forEach(desc => {
@@ -50,8 +48,8 @@ export class DefinitionsController{
     }
 
     @Get('getDefs')
-    getSimilarDefs(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean): string {
-        const definitionRecords = this.definitionService.getDefinitionsById(id, similar);
+    getSimilarDefs(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean, @Query('similarityVar', new DefaultValuePipe(80), ParseIntPipe) similarityVar: number): string {
+        const definitionRecords = this.definitionService.getDefinitionsById(id, similar, similarityVar);
         const definitions = definitionRecords.map(def => def.Definition);
         const similarDefinitions = [];
         definitions.forEach(def => {
@@ -65,5 +63,21 @@ export class DefinitionsController{
         similarDefinitions.map(def => {result = result.concat(`<p dir=\"rtl\">${def}</p>`)});
         return result;
         //return JSON.stringify(similarDefinitions);
+    }
+
+    @Get('test')
+    test(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean, @Query('similarityVar', new DefaultValuePipe(80), ParseIntPipe) similarityVar: number): string {
+        const definitionRecords = this.definitionService.getDefinitionsById(id, similar, similarityVar);
+        const descriptions = definitionRecords.map(def => def.Description);
+        let uniqueDescriptions = [];
+        descriptions.forEach(desc => {
+            if(!uniqueDescriptions.includes(desc)){
+                uniqueDescriptions=uniqueDescriptions.concat(desc.split(" "))
+            }});
+
+        const sorted = this.definitionService.sortByFrequencyAndRemoveDuplicates(uniqueDescriptions);
+        let result = ""
+        sorted.map(def => {result = result.concat(`<p dir=\"rtl\">${def}</p>`)});
+        return result;
     }
 }

@@ -9,9 +9,9 @@ export class DefinitionService{
         return definitionsJson as DefinitionRecord[];
     }
 
-    getDefinitionsById(def: string, similar: boolean): DefinitionRecord[]{
+    getDefinitionsById(def: string, similar: boolean, similarityVar: number): DefinitionRecord[]{
         if(similar){
-            return this.getDefinitions().filter(d => (this.checkSimilarity(d.Definition, def)> 80));
+            return this.getDefinitions().filter(d => (this.checkSimilarity(d.Definition, def)>= similarityVar));
 
         }else{
             return this.getDefinitions().filter(d => d.Definition === def);
@@ -19,8 +19,7 @@ export class DefinitionService{
     }
 
     checkSimilarity(strA,strB): number{
-        const res = StringUtils.compareSimilarityPercent(strA,strB);
-        return res;
+        return StringUtils.compareSimilarityPercent(strA,strB);
     }
 
     sort(str1: string, str2: string, separator = ' '): number{
@@ -32,4 +31,31 @@ export class DefinitionService{
         }
     }
 
+    sortByFrequencyAndRemoveDuplicates(array) {
+        var frequency = {}, value;
+
+        // compute frequencies of each value
+        for(var i = 0; i < array.length; i++) {
+            value = array[i];
+            if(value in frequency) {
+                frequency[value]++;
+            }
+            else {
+                frequency[value] = 1;
+            }
+        }
+
+        // make array from the frequency object to de-duplicate
+        var uniques = [];
+        for(value in frequency) {
+            uniques.push(value);
+        }
+
+        // sort the uniques array in descending order by frequency
+        function compareFrequency(a, b) {
+            return frequency[b] - frequency[a];
+        }
+
+        return uniques.sort(compareFrequency);
+    }
 }
