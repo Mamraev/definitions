@@ -4,19 +4,13 @@ import { DefinitionService } from "./DefinitionService";
 @Controller("def")
 export class DefinitionsController{
     constructor(private readonly definitionService: DefinitionService) {}
-
-    @Get('find')
-    findOne(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean, @Query('similarityVar', new DefaultValuePipe(80), ParseIntPipe) similarityVar: number): string {
-        const definitionRecords = this.definitionService.getDefinitionsById(id, similar, similarityVar);
-        return JSON.stringify(definitionRecords);
-    }
     @Get('getLaws')
-    getLaws(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean, @Query('similarityVar', new DefaultValuePipe(80), ParseIntPipe) similarityVar: number): string {
+    getLaws(@Query('id') id: string, @Query('similarityVar', new DefaultValuePipe(80), ParseIntPipe) similarityVar: number, @Query('details', new DefaultValuePipe(false), ParseBoolPipe) details : boolean): string {
         const allIds = this.definitionService.splitIntoMultipleIds(id);
         let definitionRecords = [];
         allIds.forEach(id => definitionRecords = definitionRecords.concat(this.definitionService.getDefinitionsById(id, false, 100)));
         const laws = definitionRecords.map(def => def.Law);
-        const uniqueLaws = [];
+        let uniqueLaws = [];
         laws.forEach(law => {
             if(!uniqueLaws.includes(law)){
                 uniqueLaws.push(law)
@@ -25,13 +19,36 @@ export class DefinitionsController{
             return this.definitionService.sort(a,b,'_');
         }))
         let result = ""
-        uniqueLaws.map(def => {result = result.concat(`<p dir=\"rtl\">${def}</p>`)});
+        if(details){
+            uniqueLaws.map(law => {
+                const url = this.definitionService.getLawUrl(law);
+                const lawRecords = this.definitionService.getDefinitionsByLaw(law);
+                if(url === ""){
+                    result = result.concat(`<h2 dir=\"rtl\">${law.split("_").join(" ")}</h2>`);
+                }else{
+                    result = result.concat(`<h2 dir=\"rtl\"><a href=\"${url}\" target="_blank" >${law.split("_").join(" ")}</a></h2>`);
+                }
+                lawRecords.forEach(lawRecord => {
+                    if(allIds.includes(lawRecord.Definition)){
+                        result = result.concat(`<p dir=\"rtl\"><u><b>הגדרה:</b></u> ${lawRecord.Definition} <u><b>מחלקה:</b></u> ${lawRecord.Section} <u><b>נוסח:</b></u> ${lawRecord.Description} </p>`);
+                    }
+                })
+            });
+        }else{
+            uniqueLaws.map(law => {
+                const url = this.definitionService.getLawUrl(law);
+                if(url === ""){
+                    result = result.concat(`<p dir=\"rtl\">${law.split("_").join(" ")}</p>`);
+                }else{
+                    result = result.concat(`<p dir=\"rtl\"><a href=\"${url}\" target="_blank" >${law.split("_").join(" ")}</a></p>`);
+                }
+            });
+        }
         return result;
-        //return JSON.stringify(uniqueLaws);
     }
 
     @Get('getDesc')
-    getDescriptions(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean, @Query('similarityVar', new DefaultValuePipe(80), ParseIntPipe) similarityVar: number): string {
+    getDescriptions(@Query('id') id: string, @Query('similarityVar', new DefaultValuePipe(80), ParseIntPipe) similarityVar: number,@Query('details', new DefaultValuePipe(false), ParseBoolPipe) details : boolean): string {
         const allIds = this.definitionService.splitIntoMultipleIds(id);
         let definitionRecords = [];
         allIds.forEach(id => definitionRecords = definitionRecords.concat(this.definitionService.getDefinitionsById(id, false, 100)));
@@ -46,14 +63,33 @@ export class DefinitionsController{
         }))
 
         let result = ""
-        uniqueDescriptions.map(def => {result = result.concat(`<p dir=\"rtl\">${def}</p>`)});
+        if(details){
+            uniqueDescriptions.map(desc => {
+                const defRecord = this.definitionService.getDefinitionsByDescription(desc);
+
+                result = result.concat(`<h2 dir=\"rtl\">${desc}</h2>`)
+                defRecord.forEach(descRecord => {
+                    if(allIds.includes(descRecord.Definition)){
+                        result = result.concat(`<p dir=\"rtl\"><u><b>הגדרה:</b></u> ${descRecord.Definition} <u><b>מחלקה:</b></u> ${descRecord.Section}</p>`);
+                        const url = this.definitionService.getLawUrl(descRecord.Law);
+                        if(url === ""){
+                            result = result.concat(`<p dir=\"rtl\"><u><b>חוק:</b></u> ${descRecord.Law.split("_").join(" ")}</p>`);
+                        }else{
+                            result = result.concat(`<p dir=\"rtl\"><u><b>חוק:</b></u> <a href=\"${url}\" target="_blank" >${descRecord.Law.split("_").join(" ")}</a></p>`);
+                        }
+                    }
+                })
+            });
+
+        }else{
+            uniqueDescriptions.map(desc => {result = result.concat(`<p dir=\"rtl\">${desc}</p>`)});
+        }
         return result;
-        //return JSON.stringify(uniqueDescriptions);
     }
 
     @Get('getDefs')
-    getSimilarDefs(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean, @Query('similarityVar', new DefaultValuePipe(80), ParseIntPipe) similarityVar: number): string {
-        const definitionRecords = this.definitionService.getDefinitionsById(id, similar, similarityVar);
+    getSimilarDefs(@Query('id') id: string, @Query('similarityVar', new DefaultValuePipe(80), ParseIntPipe) similarityVar: number): string {
+        const definitionRecords = this.definitionService.getDefinitionsById(id, true, similarityVar);
         const definitions = definitionRecords.map(def => def.Definition);
         const similarDefinitions = [];
         definitions.forEach(def => {
@@ -65,23 +101,6 @@ export class DefinitionsController{
         }))
         let result = ""
         similarDefinitions.map(def => {result = result.concat(`<p dir=\"rtl\">${def}</p>`)});
-        return result;
-        //return JSON.stringify(similarDefinitions);
-    }
-
-    @Get('test')
-    test(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean, @Query('similarityVar', new DefaultValuePipe(80), ParseIntPipe) similarityVar: number): string {
-        const definitionRecords = this.definitionService.getDefinitionsById(id, similar, similarityVar);
-        const descriptions = definitionRecords.map(def => def.Description);
-        let uniqueDescriptions = [];
-        descriptions.forEach(desc => {
-            if(!uniqueDescriptions.includes(desc)){
-                uniqueDescriptions=uniqueDescriptions.concat(desc.split(" "))
-            }});
-
-        const sorted = this.definitionService.sortByFrequencyAndRemoveDuplicates(uniqueDescriptions);
-        let result = ""
-        sorted.map(def => {result = result.concat(`<p dir=\"rtl\">${def}</p>`)});
         return result;
     }
 }
