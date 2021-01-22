@@ -12,7 +12,9 @@ export class DefinitionsController{
     }
     @Get('getLaws')
     getLaws(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean, @Query('similarityVar', new DefaultValuePipe(80), ParseIntPipe) similarityVar: number): string {
-        const definitionRecords = this.definitionService.getDefinitionsById(id, similar, similarityVar);
+        const allIds = this.definitionService.splitIntoMultipleIds(id);
+        let definitionRecords = [];
+        allIds.forEach(id => definitionRecords = definitionRecords.concat(this.definitionService.getDefinitionsById(id, false, 100)));
         const laws = definitionRecords.map(def => def.Law);
         const uniqueLaws = [];
         laws.forEach(law => {
@@ -30,7 +32,9 @@ export class DefinitionsController{
 
     @Get('getDesc')
     getDescriptions(@Query('id') id: string, @Query('similar', new DefaultValuePipe(false), ParseBoolPipe) similar : boolean, @Query('similarityVar', new DefaultValuePipe(80), ParseIntPipe) similarityVar: number): string {
-        const definitionRecords = this.definitionService.getDefinitionsById(id, similar, similarityVar);
+        const allIds = this.definitionService.splitIntoMultipleIds(id);
+        let definitionRecords = [];
+        allIds.forEach(id => definitionRecords = definitionRecords.concat(this.definitionService.getDefinitionsById(id, false, 100)));
         const descriptions = definitionRecords.map(def => def.Description);
         const uniqueDescriptions = [];
         descriptions.forEach(desc => {

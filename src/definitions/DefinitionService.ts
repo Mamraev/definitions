@@ -58,4 +58,8 @@ export class DefinitionService{
 
         return uniques.sort(compareFrequency);
     }
+
+    splitIntoMultipleIds(id: string){
+        return id.split("\r\n");
+    }
 }
