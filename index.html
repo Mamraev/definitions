@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body dir="rtl">
+
+<h1 dir="rtl">הגדרות</h1>
+<div dir="rtl">
+  <form action="http://localhost:3000/def/getDefs" id="mainform" target="results">
+	<div style="float:right;width:170px">
+		<textarea id="id" name="id" rows = 10 form="mainform"></textarea>
+	</div>
+	<div>
+		
+		<div>
+		<label for="vehicle1">מציאת הגדרות דומות</label>
+			<input type="submit" onclick="document.getElementById('mainform').action='http://localhost:3000/def/getDefs';" name="findBtn" id="findBtn" value="מצא"><br>
+			
+			<label for="vehicle1">מקדם התאמה</label>
+
+			<input type="range" value="80" min="50" max="100" id="similarityVar" name="similarityVar" oninput="this.nextElementSibling.value = this.value">
+			<output>80</output>
+		</div>
+		<br><br><br><br>
+		<input type="checkbox" id="details" name="details" value="true">מפורט
+		<br>
+		<input type="submit" onclick="document.getElementById('mainform').action='http://localhost:3000/def/getLaws';" value="חוקים">
+		<input type="submit" onclick="document.getElementById('mainform').action='http://localhost:3000/def/getDesc';" value="נוסחים">
+		<br>
+	</div>
+  </form>
+
+  <br/>
+  
+</div><br><br><br><br>
+
+<div style="float:right;width:170px">
+<iframe dir="rtl" name = "results" width="800" height="800" frameBorder="0">
+
+<iframe/>
+</div>
+<p>Click on the submit button to submit the form.</p>
+
+</body>
+</html>
