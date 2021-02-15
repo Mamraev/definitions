@@ -32,12 +32,15 @@
 $ npm install
 ```
 
-## Running the app
+## Running the Server
 
 ```bash
 $ npm run start
 ```
 
+## Running the Client
+
+Open index.html with browser
 
 ## Support
 
